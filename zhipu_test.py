@@ -5,7 +5,7 @@
 
 from openai import OpenAI
 import streamlit as st
-import time
+import json
 
 #【配置区】
 client = OpenAI(
@@ -40,19 +40,14 @@ if user_input:
     # 用户消息存入对话
     st.session_state.chat_history.append({"role":"user", "content":user_input})
     st.chat_message("user").write(user_input)
-
     try:
         # 请求智谱模型
         res = client.chat.completions.create(
             model=MODEL_NAME,
             messages=st.session_state.chat_history
         )
-        # 增加判断，防止choices为空报错
-        if res.choices and len(res.choices) > 0:
-            result = res.choices[0].message.content
-        else:
-            result = "模型返回异常，请重新提问"
-
+        # 安全读取返回结果
+        result = res.choices[0].message.content
         # AI回复存入对话
         st.session_state.chat_history.append({"role":"assistant", "content":result})
         st.chat_message("assistant").write(result)

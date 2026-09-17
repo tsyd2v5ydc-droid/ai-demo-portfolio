@@ -50,10 +50,10 @@ if user_input:
         # 安全读取返回结果
         result = res.choices[0].message.content
         # AI回复存入对话
+        st.session_state.chat_history.append({"role":"assistant", "content":result})
+        st.chat_message("assistant").write(result)
         #网页预览
         st.subheader("网页预览效果")
         components.html(result, height=900, scrolling=True)
-        st.session_state.chat_history.append({"role":"assistant", "content":result})
-        st.chat_message("assistant").write(result)
     except Exception as e:
         st.error(f"调用失败：{str(e)}")

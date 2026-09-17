@@ -1,0 +1,5 @@
+# 密钥环境文件，不会上传到github
+.env
+# python缓存文件
+__pycache__/
+*.pyc

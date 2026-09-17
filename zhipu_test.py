@@ -47,6 +47,8 @@ if user_input:
             messages=st.session_state.chat_history
         )
         # 安全读取返回结果
+        st.write(type(res))
+        st.write(res)
         result = res.choices[0].message.content
         # AI回复存入对话
         st.session_state.chat_history.append({"role":"assistant", "content":result})

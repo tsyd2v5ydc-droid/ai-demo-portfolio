@@ -5,7 +5,7 @@
 
 from openai import OpenAI
 import streamlit as st
-import json
+import streamlit.components.v1 as components
 
 #【配置区】
 client = OpenAI(
@@ -14,7 +14,8 @@ client = OpenAI(
 )
 MODEL_NAME = "glm-5.3-flash"
 # 系统设定提示词
-SYSTEM_PROMPT = "你是网页前端工程师。只输出完整纯HTML代码，不要```html```标记，不要任何文字解释、前言后语，直接返回完整网页代码。"
+SYSTEM_PROMPT ="""你是网页前端工程师，根据用户需求生成完整、带CSS样式的HTML单文件。
+只返回HTML代码，不要额外解释、不要markdown标记、不要多余文字。代码自带样式，页面美观，直接可以浏览器打开。"""
 
 # 初始化对话历史，存入streamlit会话缓存
 if "chat_history" not in st.session_state:
@@ -47,10 +48,11 @@ if user_input:
             messages=st.session_state.chat_history
         )
         # 安全读取返回结果
-        st.write(type(res))
-        st.write(res)
         result = res.choices[0].message.content
         # AI回复存入对话
+        #网页预览
+        st.subheader("网页预览效果")
+        components.html(result, height=900, scrolling=True)
         st.session_state.chat_history.append({"role":"assistant", "content":result})
         st.chat_message("assistant").write(result)
     except Exception as e:

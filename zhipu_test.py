@@ -16,7 +16,7 @@ MODEL_NAME = "glm-5.3-flash"
 # 系统设定提示词
 SYSTEM_PROMPT = "你是网页前端工程师。只输出完整纯HTML代码，不要```html```标记，不要任何文字解释、前言后语，直接返回完整网页代码。"
 
-# 初始化对话历史，存入streamlit会话缓存（刷新页面前记忆对话）
+# 初始化对话历史，存入streamlit会话缓存
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
         {"role": "system", "content": SYSTEM_PROMPT}
@@ -33,7 +33,7 @@ for msg in st.session_state.chat_history:
     elif msg["role"] == "assistant":
         st.chat_message("assistant").write(msg["content"])
 
-# 网页输入框（Streamlit专用，替代原来input()）
+# 网页输入框
 user_input = st.chat_input("在这里输入网页需求，例如：写一个简洁个人简历网页")
 
 if user_input:
@@ -41,13 +41,20 @@ if user_input:
     st.session_state.chat_history.append({"role":"user", "content":user_input})
     st.chat_message("user").write(user_input)
 
-    # 请求智谱模型
-    res = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=st.session_state.chat_history
-    )
-    result = res.choices[0].message.content
+    try:
+        # 请求智谱模型
+        res = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=st.session_state.chat_history
+        )
+        # 增加判断，防止choices为空报错
+        if res.choices and len(res.choices) > 0:
+            result = res.choices[0].message.content
+        else:
+            result = "模型返回异常，请重新提问"
 
-    # AI回复存入对话
-    st.session_state.chat_history.append({"role":"assistant", "content":result})
-    st.chat_message("assistant").write(result)
+        # AI回复存入对话
+        st.session_state.chat_history.append({"role":"assistant", "content":result})
+        st.chat_message("assistant").write(result)
+    except Exception as e:
+        st.error(f"调用失败：{str(e)}")

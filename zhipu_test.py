@@ -1,60 +1,53 @@
-import subprocess
-import sys
-subprocess.check_call([sys.executable, "-m", "pip", "install", "openai"])
+# 只本地VSCode运行时启用下面3行，部署streamlit请注释掉这三行
+# import subprocess
+# import sys
+# subprocess.check_call([sys.executable, "-m", "pip", "install", "openai"])
 
 from openai import OpenAI
 import streamlit as st
 import time
 
-# 【配置区】
+#【配置区】
 client = OpenAI(
     api_key=st.secrets["ZHIPU_API_KEY"],
-    base_url="https://open.bigmodel.cn/api/paas/v4/"
+    base_url="https://openai.bigmodel.cn/api/paas/v4/"
 )
 MODEL_NAME = "glm-5.3-flash"
-# 系统固定提示词：强制要求只输出纯净HTML，不带任何多余解释、代码块标记
-SYSTEM_PROMPT = "你是网页前端工程师。只输出完整纯HTML代码，不要```html、```标记，不要任何文字解释、前言后语，直接返回完整网页代码。"
+# 系统设定提示词
+SYSTEM_PROMPT = "你是网页前端工程师。只输出完整纯HTML代码，不要```html```标记，不要任何文字解释、前言后语，直接返回完整网页代码。"
 
-# 保存对话上下文，实现连续对话、迭代修改网页
-chat_history = [
-    {"role": "system", "content": SYSTEM_PROMPT}
-]
+# 初始化对话历史，存入streamlit会话缓存（刷新页面前记忆对话）
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {"role": "system", "content": SYSTEM_PROMPT}
+    ]
 
-print("===== 智谱网页生成工具【升级版】 =====")
-print("功能：支持迭代修改网页，每次生成自动新建带时间戳HTML，不会覆盖旧文件")
-print("输入 exit 退出程序\n")
+# 网页UI标题
+st.title("智谱网页生成工具")
+st.caption("输入需求，AI直接生成完整HTML网页代码")
 
-while True:
-    try:
-        user_input = input("你：")
-        if user_input.lower() == "exit":
-            print("对话结束")
-            break
+# 渲染历史对话
+for msg in st.session_state.chat_history:
+    if msg["role"] == "user":
+        st.chat_message("user").write(msg["content"])
+    elif msg["role"] == "assistant":
+        st.chat_message("assistant").write(msg["content"])
 
-        # 用户消息加入对话历史
-        chat_history.append({"role": "user", "content": user_input})
+# 网页输入框（Streamlit专用，替代原来input()）
+user_input = st.chat_input("在这里输入网页需求，例如：写一个简洁个人简历网页")
 
-        # 请求模型
-        res = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=chat_history
-        )
+if user_input:
+    # 用户消息存入对话
+    st.session_state.chat_history.append({"role":"user", "content":user_input})
+    st.chat_message("user").write(user_input)
 
-        result = res.choices[0].message.content
-        # AI回复存入上下文，下一轮可以继续修改
-        chat_history.append({"role": "assistant", "content": result})
+    # 请求智谱模型
+    res = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=st.session_state.chat_history
+    )
+    result = res.choices[0].message.content
 
-        print(f"\n智谱：已生成网页代码")
-
-        # 按时间戳生成新文件，不会覆盖旧文件
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"index_{timestamp}.html"
-
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(result)
-        print(f"✅ 文件保存成功：{filename}")
-        print("👉 去浏览器打开这个文件预览\n")
-
-    except Exception as e:
-        print(f"\n❌ 出错了！错误信息：{e}")
-        print("请检查网络、API余额，程序不会崩溃，可以继续提问\n")
+    # AI回复存入对话
+    st.session_state.chat_history.append({"role":"assistant", "content":result})
+    st.chat_message("assistant").write(result)

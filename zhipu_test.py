@@ -10,7 +10,7 @@ import json
 #【配置区】
 client = OpenAI(
     api_key=st.secrets["ZHIPU_API_KEY"],
-    base_url="https://openai.bigmodel.cn/api/paas/v4/"
+    base_url="https://open.bigmodel.cn/api/paas/v4/"
 )
 MODEL_NAME = "glm-5.3-flash"
 # 系统设定提示词

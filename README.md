@@ -1,6 +1,6 @@
 # 智谱大模型网页生成工具
 > Python + Streamlit + 智谱GLM API AI网页生成Demo
-> 线上体验：【粘贴你的Streamlit链接】
+> 线上体验：【https://ai-demo-portfolio-pbqg3fhwtuhzyeu6vumbas.streamlit.app/】
 
 ## 项目介绍
 业务侧AI应用Demo，基于Streamlit搭建交互界面，接入智谱GLM大模型API。用户通过自然语言描述需求，自动生成带完整CSS的HTML页面，支持实时预览、多轮对话迭代修改页面。适合快速制作简历、活动落地页等静态网页。

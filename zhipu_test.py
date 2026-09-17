@@ -1,9 +1,14 @@
+import subprocess
+import sys
+subprocess.check_call([sys.executable, "-m", "pip", "install", "openai"])
+
 from openai import OpenAI
+import streamlit as st
 import time
 
 # 【配置区】
 client = OpenAI(
-    api_key="从.env读取密钥",
+    api_key=st.secrets["ZHIPU_API_KEY"],
     base_url="https://open.bigmodel.cn/api/paas/v4/"
 )
 MODEL_NAME = "glm-5.3-flash"
